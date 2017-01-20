@@ -20,6 +20,10 @@
 //  OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN
 //  THE SOFTWARE.
 
+
+//  REPLACE THE NSMANAGEDOBJECT ** ATTEND ** WITH YOUR NSMANAGEDOBJECT USED AS ENTITY IN YOUR COREDATA MODEL IN THIS FILE.
+
+
 import Foundation
 import UIKit
 import CoreData
@@ -30,8 +34,8 @@ class CoreDataHelper {
     * Returns an NSManagedObjectContext, which is used for core data fetching
     */
     class func getManagedContext() -> NSManagedObjectContext {
-        var appDel: AppDelegate = (UIApplication.sharedApplication().delegate as AppDelegate)
-        var context: NSManagedObjectContext = appDel.managedObjectContext!
+        let appDel: AppDelegate = (UIApplication.shared.delegate as! AppDelegate)
+        let context: NSManagedObjectContext = appDel.managedObjectContext
         
         return context
     }
@@ -40,15 +44,23 @@ class CoreDataHelper {
     * Returns an NSArray of results from a core data request
     * @var entityName The name of the core data entity to request
     */
-    class func getCoreDataResults(entityName: String) -> NSArray {
-        var context = getManagedContext()
+    
+    class func getCoreDataResults(_ entityName: String) -> NSArray {
+        let context = getManagedContext()
         
-        var request = NSFetchRequest(entityName: entityName)
-        request.returnsObjectsAsFaults = false
-        
-        var results: NSArray = context.executeFetchRequest(request, error: nil)!
-        
-        return results
+        let request: NSFetchRequest<Attend> //REPLACE ATTEND WITH YOUR ENTITY
+        if #available(iOS 10.0, *) {
+            request = NSFetchRequest<Attend>(entityName: "\(entityName)") //REPLACE ATTEND WITH YOUR ENTITY
+        } else {
+            request = NSFetchRequest<Attend>(entityName: "\(entityName)") //REPLACE ATTEND WITH YOUR ENTITY
+        }
+        do {
+           let results = try context.fetch(request)
+            return results as NSArray
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        return []
     }
     
     /**
@@ -56,8 +68,8 @@ class CoreDataHelper {
     * @var entityName The name of the core data entity to request
     * @var id The Id of the core data object to fetch
     */
-    class func getCoreDataResultById(entityName: String, id: Int) -> NSManagedObject? {
-        var results = getCoreDataResults(entityName)
+    class func getCoreDataResultById(_ entityName: String, id: Int) -> NSManagedObject? {
+        let results = getCoreDataResults(entityName)
         
         if(id >= 0 && results.count > id) {
             return results[id] as? NSManagedObject
@@ -70,8 +82,27 @@ class CoreDataHelper {
     * Returns the first object inside of the core data request or nil if none
     * @var entityName The name of the core data entity to request
     */
-    class func getFirstCoreDataResult(entityName: String) -> NSManagedObject? {
+    class func getFirstCoreDataResult(_ entityName: String) -> NSManagedObject? {
         return getCoreDataResultById(entityName, id: 0)
+    }
+    
+    class func getTotalItems(_ entityName: String) -> Int? {
+        
+        let context = getManagedContext()
+        
+        let request: NSFetchRequest<Attend>  //REPLACE ATTEND WITH YOUR ENTITY
+        if #available(iOS 10.0, *) {
+            request = Attend.fetchRequest() as! NSFetchRequest<Attend>  //REPLACE ATTEND WITH YOUR ENTITY
+        } else {
+            request = NSFetchRequest(entityName: "\(entityName)")
+        }
+        do {
+            let result:NSArray = try context.fetch(request) as NSArray
+            return result.count
+        } catch let error {
+            print(error.localizedDescription)
+        }
+        return 0
     }
     
     /**
@@ -79,21 +110,21 @@ class CoreDataHelper {
     * @var entityName The name of the core data entity to request
     * @var dictionary The key value pair dictionary that represents the core data object properties
     */
-    class func save(entityName: String, dictionary: Dictionary<String, AnyObject?>) {
-        var context = getManagedContext()
+    class func save(_ entityName: String, dictionary: Dictionary<String, String>) {
+        let context = getManagedContext()
         
-        var saveObject: AnyObject = NSEntityDescription.insertNewObjectForEntityForName(entityName, inManagedObjectContext: context)
+        let saveObject: AnyObject = NSEntityDescription.insertNewObject(forEntityName: entityName, into: context)
         
         for(key, value) in dictionary {
             saveObject.setValue(value, forKey: key)
         }
-        
-        var error: NSError?
-        
-        context.save(&error)
-        
-        if(error != nil) {
-            println(error)
-        }
+        do {
+            try context.save()
+            print("saved")
+        } catch let error as NSError  {
+            print("Could not save \(error), \(error.userInfo)")
+        } catch {
+            
+        } 
     }
 }
