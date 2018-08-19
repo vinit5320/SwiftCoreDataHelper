@@ -3,7 +3,7 @@ SwiftCoreDataHelper
 
 Updated with iOS 10 and Swift 3.0 compatibility.
 
-Note: REPLACE THE NSManagedObject ** ATTEND ** WITH YOUR NSManagedObject USED AS ENTITY IN YOUR Coredata MODEL IN THIS FILE.
+Note: REPLACE THE NSManagedObject ** ATTEND ** WITH YOUR NSManagedObject USED AS ENTITY IN Coredata.
 
 Helper class for Core Data handling in Swift
 
